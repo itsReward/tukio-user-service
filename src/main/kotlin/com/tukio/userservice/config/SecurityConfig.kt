@@ -1,5 +1,6 @@
 package com.tukio.userservice.config
 
+import com.tukio.userservice.security.JwtService
 import com.tukio.userservice.security.JwtAuthenticationFilter
 import com.tukio.userservice.service.UserService
 import org.springframework.context.annotation.Bean
@@ -11,7 +12,6 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
 import org.springframework.security.config.http.SessionCreationPolicy
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.security.web.SecurityFilterChain
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter
@@ -21,8 +21,14 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @EnableMethodSecurity
 class SecurityConfig(
     private val userService: UserService,
-    private val jwtAuthenticationFilter: JwtAuthenticationFilter
+    private val jwtService: JwtService,
+    private val passwordEncoder: PasswordEncoder // Inject PasswordEncoder instead of creating it
 ) {
+
+    @Bean
+    fun jwtAuthenticationFilter(): JwtAuthenticationFilter {
+        return JwtAuthenticationFilter(jwtService, userService)
+    }
 
     @Bean
     fun securityFilterChain(http: HttpSecurity): SecurityFilterChain {
@@ -37,7 +43,7 @@ class SecurityConfig(
             }
             .sessionManagement { it.sessionCreationPolicy(SessionCreationPolicy.STATELESS) }
             .authenticationProvider(authenticationProvider())
-            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter::class.java)
+            .addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter::class.java)
 
         return http.build()
     }
@@ -46,7 +52,7 @@ class SecurityConfig(
     fun authenticationProvider(): DaoAuthenticationProvider {
         val authProvider = DaoAuthenticationProvider()
         authProvider.setUserDetailsService(userService)
-        authProvider.setPasswordEncoder(passwordEncoder())
+        authProvider.setPasswordEncoder(passwordEncoder) // Use the injected PasswordEncoder
         return authProvider
     }
 
@@ -54,9 +60,6 @@ class SecurityConfig(
     fun authenticationManager(authConfig: AuthenticationConfiguration): AuthenticationManager {
         return authConfig.authenticationManager
     }
-
-    @Bean
-    fun passwordEncoder(): PasswordEncoder {
-        return BCryptPasswordEncoder()
-    }
+    
+    // Remove the passwordEncoder() bean method
 }

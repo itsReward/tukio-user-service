@@ -261,3 +261,4 @@ class UserServiceImpl(
             updatedAt = this.updatedAt
         )
     }
+}
