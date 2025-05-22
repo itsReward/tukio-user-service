@@ -34,4 +34,6 @@ interface UserService : UserDetailsService {
     fun getUsersByInterests(interests: Set<String>): List<UserDTO>
 
     fun getPublicUserProfile(userId: Long): UserPublicProfileDTO
+
+    fun createDefaultAdminUser()
 }

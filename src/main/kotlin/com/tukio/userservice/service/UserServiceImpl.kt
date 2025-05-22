@@ -261,4 +261,30 @@ class UserServiceImpl(
             updatedAt = this.updatedAt
         )
     }
+
+    override fun createDefaultAdminUser(){
+        val users = getAllUsers()
+
+        // Get the default USER role
+        val userRole = roleRepository.findByName("ADMIN")
+            .orElseThrow { ResourceNotFoundException("Default role not found") }
+
+        if (users.isEmpty()){
+            // Create the new user
+            val user = User(
+                username = "admin",
+                email = "admin@tukio.com",
+                password = passwordEncoder.encode("admin123"),
+                firstName = "System",
+                lastName = "Administrator",
+                department = "Tukio Development",
+                studentId = null,
+                graduationYear = null,
+                interests = mutableSetOf(),
+                roles = mutableSetOf(userRole)
+            )
+
+            val savedUser = userRepository.save(user)
+        }
+    }
 }
