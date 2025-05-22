@@ -38,6 +38,8 @@ class SecurityConfig(
                 auth
                     .requestMatchers("/api/auth/**").permitAll()
                     .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
+                    .requestMatchers("/api/users").permitAll()
+                    .requestMatchers("/api/users/**").permitAll() // For internal service calls
                     .requestMatchers("/actuator/**").permitAll()
                     .anyRequest().authenticated()
             }
